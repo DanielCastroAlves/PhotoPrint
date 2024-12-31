@@ -32,7 +32,7 @@ export default function App() {
                     {(props) => (
                         <HomeScreen
                             {...props}
-                            savedPhotos={savedPhotos}
+                            savedPhotos={savedPhotos} // Passando savedPhotos para o HomeScreen
                             selectedPhotos={selectedPhotos}
                             setSelectedPhotos={setSelectedPhotos}
                         />

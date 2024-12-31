@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Image, Alert } from 'react-native';
-import axios from 'axios';
+import React from 'react';
+import { View, Text, Button, StyleSheet, FlatList, Image } from 'react-native';
 
 interface GalleryScreenProps {
     savedPhotos: string[];
@@ -9,55 +8,22 @@ interface GalleryScreenProps {
     setSelectedPhotos: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-interface PhotoResponse {
-    filepath: string;
-}
-
 const GalleryScreen: React.FC<GalleryScreenProps> = ({
     savedPhotos,
     setSavedPhotos,
     selectedPhotos,
     setSelectedPhotos,
 }) => {
-    // Função para buscar fotos salvas no backend
-    const fetchSavedPhotos = async () => {
-        try {
-            const response = await axios.get<PhotoResponse[]>('http://192.168.0.189:3001/images'); // Altere para o IP correto
-            setSavedPhotos(response.data.map((photo) => photo.filepath));
-        } catch (error) {
-            Alert.alert('Erro', 'Não foi possível carregar as fotos.');
-            console.error(error);
-        }
-    };
-
-    // Carregar fotos ao montar o componente
-    useEffect(() => {
-        fetchSavedPhotos();
-    }, []);
-
-    // Adicionar foto fictícia (apenas para teste)
     const handleAddPhoto = () => {
         const newPhoto = `https://via.placeholder.com/200?text=Photo+${savedPhotos.length + 1}`;
         setSavedPhotos((prev) => [...prev, newPhoto]);
     };
 
-    // Excluir foto do backend e atualizar a lista
-    const handleDeletePhoto = async (uri: string) => {
-        try {
-            await axios.request({
-                method: 'DELETE',
-                url: 'http://192.168.0.189:3001/images', // Altere para o IP correto
-                data: { filepath: uri }, // Dados enviados no corpo da requisição
-            });
-            setSavedPhotos((prev) => prev.filter((photo) => photo !== uri));
-            setSelectedPhotos((prev) => prev.filter((photo) => photo !== uri));
-        } catch (error) {
-            Alert.alert('Erro', 'Não foi possível excluir a foto.');
-            console.error(error);
-        }
+    const handleDeletePhoto = (uri: string) => {
+        setSavedPhotos((prev) => prev.filter((photo) => photo !== uri));
+        setSelectedPhotos((prev) => prev.filter((photo) => photo !== uri));
     };
-    
-    // Selecionar ou desselecionar fotos
+
     const handleSelectPhoto = (uri: string) => {
         if (selectedPhotos.includes(uri)) {
             setSelectedPhotos((prev) => prev.filter((photo) => photo !== uri));
@@ -74,10 +40,11 @@ const GalleryScreen: React.FC<GalleryScreenProps> = ({
                 <Text style={styles.subtitle}>Nenhuma foto disponível.</Text>
             ) : (
                 <FlatList
+                    horizontal
                     data={savedPhotos}
                     keyExtractor={(item, index) => `${item}-${index}`}
                     renderItem={({ item }) => (
-                        <View style={styles.photoContainer}>
+                        <View style={styles.filmFrame}>
                             <Image source={{ uri: item }} style={styles.image} />
                             <Button
                                 title={selectedPhotos.includes(item) ? 'Deselecionar' : 'Selecionar'}
@@ -90,6 +57,7 @@ const GalleryScreen: React.FC<GalleryScreenProps> = ({
                             />
                         </View>
                     )}
+                    contentContainerStyle={styles.filmRollContainer}
                 />
             )}
         </View>
@@ -114,15 +82,27 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginVertical: 20,
     },
-    photoContainer: {
-        marginVertical: 10,
+    filmRollContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#000',
+        padding: 10,
+        borderRadius: 5,
+    },
+    filmFrame: {
+        marginHorizontal: 8,
+        padding: 8,
+        backgroundColor: '#555',
+        borderWidth: 1,
+        borderColor: '#333',
+        borderRadius: 5,
         alignItems: 'center',
     },
     image: {
-        width: 200,
-        height: 200,
+        width: 100,
+        height: 100,
         marginBottom: 10,
-        borderRadius: 10,
+        borderRadius: 5,
     },
 });
 
